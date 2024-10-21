@@ -1,0 +1,38 @@
+name: run-pipeline
+
+on:
+  push:
+  schedule:
+    - cron:  '5 12 * * *'
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Allow the action to update the repo
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+          cache: pipenv
+      
+      - name: Install pipenv
+        run: pip install pipenv
+
+      - name: Install dependencies
+        run: pipenv install --ignore-pipfile
+
+      - name: Run python code
+        env: # Set the secret as an input
+          FUTURE_FIRST: ${{ secrets.FUTURE_FIRST }}
+        #   FIRST_NAME: Joel
+        #   LAST_NAME: Suss
+        run: pipenv run start
+
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Data update
